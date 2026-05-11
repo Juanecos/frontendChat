@@ -9,7 +9,7 @@ import { ForgotInputGroup } from "./authBox/ForgotInputGroup";
 import BackgroundVideo from "./video/BackgroundVideo";
 import AuthCard from "./authBox/AuthCard";
 
-const LoginPage = () => {
+const LoginForm = () => {
 
 	const { mode, showLogin, showRegister, showForget } = useLoginHooks();
   return (
@@ -84,4 +84,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default LoginForm;
