@@ -1,81 +1,87 @@
-// src/features/auth/components/LoginForm.tsx
-import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import axiosInstance from '../../../shared/lib/axios';
-import { useAuthStore } from '../store/authStore';
+// import React from 'react';
+// import { useState } from 'react';
+import {  useLoginHooks } from "../hooks/useLoginHooks";
 
-// Definir tipos para la respuesta y error de la mutación
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
+import { LoginInputGroup } from './authBox/LoginInputGroup';
+import { RegisterInputGroup } from './authBox/RegisterInputGroup';
+import { ForgotInputGroup } from "./authBox/ForgotInputGroup";
 
-interface LoginResponse {
-  access_token: string;
-  user: User;
-}
+import BackgroundVideo from "./video/BackgroundVideo";
+import AuthCard from "./authBox/AuthCard";
 
+const LoginPage = () => {
 
-const LoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { setUser, setAccessToken } = useAuthStore();
-
-  // Tipar correctamente la mutación
-  const mutation = useMutation<LoginResponse, Error, { email: string; password: string }>({
-    mutationFn: async ({ email, password }) => {
-      const response = await axiosInstance.post('/auth/login', { email, password });
-      return response.data;
-    },
-    onSuccess: (data) => {
-      setAccessToken(data.access_token);
-      setUser(data.user);
-    },
-    onError: (error) => {
-      console.error('Error de login:', error);
-    },
-  });
-
-  const handleLogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    mutation.mutate({ email, password }); // Ejecutar la mutación
-  };
-
-	// TODO: Probar este formualario, el email.prevent y el mutation no estan funcionando, poner un mensaje si la respuesta es error
+	const { mode, showLogin, showRegister, showForget } = useLoginHooks();
   return (
-    <form onSubmit={handleLogin}>
-      <input
-        type="email"
-        placeholder="Correo electrónico"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        placeholder="Contraseña"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button type="submit" disabled={mutation.isPending}>
-        {mutation.isPending ? 'Iniciando sesión...' : 'Iniciar sesión'}
-      </button>
+		
+    <div className="relative min-h-screen overflow-hidden bg-background text-on-background">
+			<BackgroundVideo />
 
-      {/* Animación de loading */}
-      {mutation.isPending && <div className="loading-spinner">Cargando...</div>}
+      {/* Main Content */}
+			<main className="relative z-30 flex min-h-screen items-center justify-center px-4 ">
 
-      {/* Mostrar mensaje de error si hay alguno */}
-      {mutation.isError && <div className="error">Error al iniciar sesión</div>}
+        {/* Login Card */}
+        <div className="p-10 glass-surface w-full max-w-[440px] rounded-xl border border-outline-variant/20 relative z-10 flex flex-col gap-5">
 
-      {/* Animación de entrada al chat después de login exitoso */}
-      {mutation.isSuccess && (
-        <div className="chat-entry-animation">
-          <p>Bienvenido al chat</p>
-          {/* Aquí puedes agregar la animación de entrada */}
+				{mode === 'login' && (
+					<AuthCard
+						title="Iniciar Sesión"
+						description="Inicia sesión en anime online chat para seguir con la diversión!!"
+						footerText="Aún no tienes una cuenta? "
+						footerAction="Regístrate"
+						onFooterClick={showRegister}
+					>
+						<form className="flex flex-col gap-10">
+							<LoginInputGroup forgetMode={showForget} />
+						</form>
+					</AuthCard>
+				)}
+				{mode === 'register' && (
+					<AuthCard
+						title="Registrarse"
+						description="Aquí empieza tu aventura!!"
+						footerText="Ya tienes una cuenta? "
+						footerAction="Inicia sesión"
+						onFooterClick={showLogin}
+					>
+						<form className="flex flex-col gap-2">
+							<RegisterInputGroup />
+
+							<button
+								className="py-2 w-full bg-primary-container text-on-primary-container rounded-lg"
+								type="submit"
+							>
+								Registrarme
+							</button>
+						</form>
+					</AuthCard>
+					
+				)}
+				{mode === 'forget' && (
+					<AuthCard
+						title="Recuperar contraseña"
+						description="Te ayudaremos a recuperar tu cuenta."
+						footerText="¿Recordaste tu contraseña? "
+						footerAction="Volver a iniciar sesión"
+						onFooterClick={showLogin}
+					>
+						<form className="flex flex-col gap-2">	
+							<ForgotInputGroup />
+							<button
+								className="py-2 w-full bg-primary-container text-on-primary-container rounded-lg"
+								type="submit"
+							>
+								Enviar solicitud
+							</button>
+						</form>
+
+					</AuthCard>
+				)}
+
         </div>
-      )}
-    </form>
+      </main>
+    </div>
   );
 };
 
-export default LoginForm;
+export default LoginPage;
